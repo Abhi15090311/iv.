@@ -49,21 +49,24 @@
 
   <h1>Grocery Store Survey Dashboard</h1>
 
-  <div class="filters">
-    <label>
-      Store Chain:
-      <select id="chainSelect"><option value="All">All</option></select>
-    </label>
-    <label>
-      Gender:
-      <select id="genderSelect"><option value="All">All</option></select>
-    </label>
-    <label>
-      Occupation:
-      <select id="occupationSelect"><option value="All">All</option></select>
-    </label>
-    <button id="resetBtn">Reset Filters</button>
-  </div>
+ <div class="filters" style="text-align: center; font-size: 16px;">
+  <label style="margin-right: 10px;">
+    Store Chain:
+    <select id="chainSelect" style="margin-left: 5px;"><option value="All">All</option></select>
+  </label>
+  <label style="margin-right: 10px;">
+    Gender:
+    <select id="genderSelect" style="margin-left: 5px;"><option value="All">All</option></select>
+  </label>
+  <label style="margin-right: 10px;">
+    Occupation:
+    <select id="occupationSelect" style="margin-left: 5px;"><option value="All">All</option></select>
+  </label>
+  <button id="resetBtn" style="margin-left: 10px; background: white; color: black; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
+    Reset Filters
+  </button>
+</div>
+
 
   <div class="chart-container">
     <div class="chart" id="barChart">
