@@ -14,6 +14,20 @@
     h1, h2 {
       text-align: center;
     }
+    .filters {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    select, button {
+      background-color: #000;
+      color: white;
+      padding: 5px 10px;
+      border: 1px solid gray;
+      font-size: 14px;
+    }
     .chart-container {
       display: flex;
       flex-wrap: wrap;
@@ -29,24 +43,27 @@
       background-color: #1a1a1a;
       border-radius: 8px;
     }
-    select {
-      display: block;
-      margin: 20px auto;
-      background-color: #000;
-      color: white;
-      padding: 5px 10px;
-      border: 1px solid gray;
-    }
   </style>
 </head>
 <body>
 
   <h1>Grocery Store Survey Dashboard</h1>
 
-  <label for="chainSelect">Filter by Store Chain:</label>
-  <select id="chainSelect">
-    <option value="All">All</option>
-  </select>
+  <div class="filters">
+    <label>
+      Store Chain:
+      <select id="chainSelect"><option value="All">All</option></select>
+    </label>
+    <label>
+      Gender:
+      <select id="genderSelect"><option value="All">All</option></select>
+    </label>
+    <label>
+      Occupation:
+      <select id="occupationSelect"><option value="All">All</option></select>
+    </label>
+    <button id="resetBtn">Reset Filters</button>
+  </div>
 
   <div class="chart-container">
     <div class="chart" id="barChart">
@@ -74,13 +91,29 @@
       Occupation: d.Occupation,
       FamilySize: +d.FamilySize
     })).then(data => {
-      const allChains = Array.from(new Set(data.map(d => d.Chain)));
-      allChains.forEach(chain => {
-        d3.select("#chainSelect").append("option").text(chain).attr("value", chain);
-      });
+      // Populate filter options
+      const chains = new Set(data.map(d => d.Chain));
+      const genders = new Set(data.map(d => d.Gender));
+      const occupations = new Set(data.map(d => d.Occupation));
 
-      function updateDashboard(selectedChain) {
-        const filtered = selectedChain === "All" ? data : data.filter(d => d.Chain === selectedChain);
+      chains.forEach(c => d3.select("#chainSelect").append("option").text(c).attr("value", c));
+      genders.forEach(g => d3.select("#genderSelect").append("option").text(g).attr("value", g));
+      occupations.forEach(o => d3.select("#occupationSelect").append("option").text(o).attr("value", o));
+
+      function filterData() {
+        const selectedChain = d3.select("#chainSelect").property("value");
+        const selectedGender = d3.select("#genderSelect").property("value");
+        const selectedOccupation = d3.select("#occupationSelect").property("value");
+
+        return data.filter(d =>
+          (selectedChain === "All" || d.Chain === selectedChain) &&
+          (selectedGender === "All" || d.Gender === selectedGender) &&
+          (selectedOccupation === "All" || d.Occupation === selectedOccupation)
+        );
+      }
+
+      function updateDashboard() {
+        const filtered = filterData();
 
         // === BAR CHART ===
         const avgByChain = d3.rollups(filtered, v => d3.mean(v, d => d.PurchaseAmount), d => d.Chain);
@@ -91,7 +124,7 @@
               height = +svgBar.attr("height") - margin.top - margin.bottom;
 
         const x = d3.scaleBand().domain(avgByChain.map(d => d[0])).range([0, width]).padding(0.3);
-        const y = d3.scaleLinear().domain([0, d3.max(avgByChain, d => d[1])]).nice().range([height, 0]);
+        const y = d3.scaleLinear().domain([0, d3.max(avgByChain, d => d[1]) || 100]).nice().range([height, 0]);
 
         const g = svgBar.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
         g.append("g").call(d3.axisLeft(y)).selectAll("text").attr("fill", "white");
@@ -156,10 +189,14 @@
           });
       }
 
-      updateDashboard("All");
-      d3.select("#chainSelect").on("change", function () {
-        updateDashboard(this.value);
+      // Trigger updates
+      d3.selectAll("select").on("change", updateDashboard);
+      d3.select("#resetBtn").on("click", () => {
+        d3.selectAll("select").property("value", "All");
+        updateDashboard();
       });
+
+      updateDashboard();
     });
   </script>
 </body>
